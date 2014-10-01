@@ -1,4 +1,4 @@
-from utils import zeros
+from lin import zeros
 
 class FFNet(object):
 

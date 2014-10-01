@@ -1,4 +1,4 @@
-from lin import zeros
+import linfunc
 
 class FFNet(object):
 
@@ -8,7 +8,7 @@ class FFNet(object):
 	"""
 	
 
-	def __init__(self, layers, transf):
+	def __init__(self, layers, activf):
 		"""
 		Create a FFNet object with a given layer structure
 		
@@ -16,50 +16,61 @@ class FFNet(object):
 		---------
 		layers: list
 			List of layer sizes [Ninput, Nhidden1, ..., NhiddenK, Noutput]
-		transf: list
-			List of layer transfer functions. {"lin", "sigm", or "tanh"}
+		activf: list
+			List of layer transfer functions objects
 
 		Examples
 		--------
-		>>> net = FFNet([8, 5, 3], ["lin", "tanh", "sigm"])
+		>>> net = FFNet([8, 5, 3], [activation.linear(), activation.sigmoid(), activation.tanh(1.8, 3./2)])
 		"""
 				
 		self.W = []						# structured weights and biases
 		self.layers = layers			# layer sizes
 		self.nlayers = len(layers)      # number of layers  
 		
-		self.transf = transf			# transfer functions
+		self.activf = activf			# transfer functions
+		
+		self.y = []						# layer inputs
+		self.z = []						# layer activations
 		
 		for j in xrange(0, self.nlayers-1):
-			# matrix of weights between next and current layer
-			self.W.append(zeros(layers[j]+1, layers[j+1])) # first row contains bias 
+			
+			# a column of weight matrix including bias
+			column = [0] * (layers[j] + 1)	
 	
+			# repeat for each node of next layer
+			m = [column] * layers[j+1]
+				
+			# append to list of weights
+			self.W.append(m)
+		
 	def getw(self):
 		"""
 		Get current weights (and biases) as a flat list
-
 		"""
 		w = [];
 		
 		for matrix in self.W:
-			for row in matrix:
-				w = w + row
+			for column in matrix:
+				w = w + column
 		
-		return w
-						
+		return w			
 
 	def setw(self, w):
 		"""
 		Set weights (and biases) from a flat list
-		
 		"""
 		count = 0;
 		for j in xrange(0, self.nlayers-1):
+			m = []
 			# matrix of weights between next and current layer
-			for k in xrange(0, self.layers[j]+1):
-				self.W[j][k] = w [ count : count + self.layers[j+1] ]
+			for _ in xrange(0, self.layers[j]+1):
+				column = w[count : count + self.layers[j+1]] 
+				m.append(column)
 				count = count + self.layers[j+1]
-
+			# put into list of matrices
+			self.W[j] = m
+			
 	def apply(self, x):
 		"""
 		Compute output of neural network for a single data sample 
@@ -72,29 +83,73 @@ class FFNet(object):
 
 		Returns
 		-------
-		y: list
-			List of neural network output values
+		z: list
+			Neural network output values
 
 		"""
-		pass
+		
+		# clear working memory
+		self.y = []
+		self.z = []
+		
+		# input to the first layer 
+		self.y += [x]
+			
+		# propagate forward			
+		for j in xrange(0, self.nlayers-1):
+			# current layer activation 
+			self.z += [map( self.activf[j].f, self.y[j] )]
+			# add bias 
+			z_ = [1] + self.z[j]
+			# next layer input
+			self.y += [linfunc.gax(self.W[j], z_)]
+			
+		# output layer activation
+		j = self.nlayers-1
+		self.z += [map( self.activf[j].f, self.y[j] )]
+		
+		# return the output activation
+		return self.z[self.nlayers - 1]
 	
-	def jacobian(self, x):
+	def backprop(self, d):
 		"""
-		Compute jacobian of a network outputs with respect to weights at a given sample point 
+		Compute gradients  
 
 		Arguments
 		---------
 		x: list
-			List of input features of a single data point (single sample)	
+			List of input features of a single data point (single sample)
+		
+		d: list of backpropagating errors	
 
 		"""
 		
+		dy = [[]] * self.nlayers
+		dz = [[]] * self.nlayers
+		dW = [[]] * (self.nlayers - 1)
 		
+		k = self.nlayers - 1
+		dz[k] = d
+		dy[k] = linfunc.prod(d, map( self.activf[k].df, self.z[k] ))
 		
-
-	
+		for j in xrange(k, 0, -1):
+			# compute derivatives with respect to biases and weights
+			dW[j-1] = [dy[j]] + linfunc.outer(dy[j], self.z[j-1])
+			# backpropagate connections
+			dz[j-1] = linfunc.lgax(dy[j], self.W[j-1])
+			# remove bias
+			dz_ = dz[j-1][1:]	
+			# backpropagate activation
+			dy[j-1] = linfunc.prod(dz_, map( self.activf[j-1].df, self.z[j-1] ))
+			
 		
-
+		# expand derivatives		
+		dw = [];
+		for matrix in dW:
+			for column in matrix:
+				dw = dw + column
+		# done
+		return dw
 	
 
 

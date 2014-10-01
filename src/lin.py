@@ -127,7 +127,10 @@ class vector(collections.MutableSequence):
         # construct a matrix by sequentially multiplying
         # `this` vector by each element of `that` vector
         return matrix( map(lambda x: self*x, that) )
-        
+     
+    def to_list(self):
+        # return vector as list
+        return self.list[:]   
 
 
 class matrix(collections.MutableSequence):
@@ -202,11 +205,3 @@ class matrix(collections.MutableSequence):
         if isinstance(that, matrix):
             # multiply `this` matrix by each column of `that` matrix
             return matrix(map(lambda c: self * c, that))
-
-
-
-
-
-
-
-

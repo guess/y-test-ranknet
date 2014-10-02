@@ -17,9 +17,15 @@ of the matrix.
 
 """
 
-def sum(x, y):
+def unit(n, k):
     """
-    Compute element-wise sum of two vectors
+    Create an ort vector 
+    """
+    return [ 0 if j!=k else 1 for j in xrange(n) ]
+
+def vsum(x, y):
+    """
+    Compute element-wise vsum of two vectors
     """
     
     assert len(x) == len(y), "Vectors must be of the same size"
@@ -27,7 +33,7 @@ def sum(x, y):
     result = [0] * len(x)           # preallocate result
     
     for j in xrange(0, len(x)):     
-        result[j] =  x[j] + y[j]    # sum of corresponding elements
+        result[j] =  x[j] + y[j]    # vsum of corresponding elements
         
     return result
   
@@ -98,7 +104,7 @@ def gax(A, x):
     z = [0] * len(A[0])                 # initial result is zero vector
     
     for j in xrange(0, len(A)):
-        z = sum(z, sax(x[j], A[j]))
+        z = vsum(z, sax(x[j], A[j]))
     
     return z
 

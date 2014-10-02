@@ -1,8 +1,8 @@
-import ffnet, activation
+import ffnet, activation, linfunc
 import unittest, random
 
 n = 3
-k, q, m = 8, 5, 2
+k, q, m = 8, 5, 3
 
 class FFNetTest(unittest.TestCase):
          
@@ -56,44 +56,61 @@ class FFNetTest(unittest.TestCase):
         x = [1] * 8
         z = net.apply(x)
 
-        print z
-
     def test_backprop(self):
         
+        #===================================
+        # Gradient check
+        #===================================
+        
         # create a simple network
-        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.sigmoid(), activation.tanh()])  
+        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.sigmoid(1.2), activation.tanh(2.0, 3.0/2.0)])  
 
-        # set weights
+        # set random weights
+        wscale = 0.1
         w = net.getw()
-        w = [1] * len(w)
+        w = [random.uniform(-wscale, wscale) for _ in w]
         net.setw(w)
 
-        # some input
-        x = [205.0] * 8
-        z = net.apply(x)
-        
-        n = 45
-        
-        # backprop
-        d = net.backprop([1.0/2, 0])
-                       
-        dw = 1.e-6
-        w_u = w[:]
-        w_u[n] = w_u[n] + dw
-        net.setw(w_u)
-        z1 = net.apply(x)
-        
-        w_d = w[:]
-        w_d[n] = w_u[n] - dw
-        net.setw(w_d)
-        z2 = net.apply(x)
-        
-        print (z1[0] - z2[0])/dw/2
-        print d[n]
+        # run tests
+        ntest = 1000
+               
+        for j in xrange(ntest):
+            
+            # generate random input vector
+            xscale = 5.0
+            x = [random.uniform(-xscale, xscale) for _ in xrange(0, k)]
+            z = net.apply(x)
 
+            # select a weight at random
+            N = (k+1)*q + (q+1)*m           # total number of weights
+            nw = random.randint(0, N-1)       # select one weight at random
+                        
+            # backprop
+            for jm in xrange(m):
+                
+                # compute derivative of output with 
+                # respect to input using back propagation
+                dbpr = net.backprop(linfunc.unit(m, jm))    # initial delta is just a unit vector
+                
+                # numerical derivative           
+                dw = 1.e-6
+                
+                w_u = w[:]
+                w_u[nw] = w_u[nw] + dw
+                net.setw(w_u)
+                z1 = net.apply(x)
+                                
+                w_d = w[:]
+                w_d[nw] = w_d[nw] - dw
+                net.setw(w_d)
+                z2 = net.apply(x)
+                
+                dnum = (z1[jm] - z2[jm]) / dw / 2
+                
+                # compare results
+                self.assertAlmostEqual(dbpr[nw], dnum, 5, "Run %d, output %d: %e %e " % (j, jm, dbpr[nw], dnum))
 
-
-
+                print j, nw, jm, dbpr[nw], dnum
 
 
 if __name__ == '__main__':

@@ -18,6 +18,11 @@ class Test(unittest.TestCase):
         
         print linfunc.lgax(x, matrix)
 
+    def test_unit(self):
+        
+        u = linfunc.unit(6, 2)
+        
+        print u
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

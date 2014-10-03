@@ -55,7 +55,45 @@ class Test(unittest.TestCase):
         dnum = (C_u - C_d) / dw / 2.0
         
         print dbpr[jw], dnum
+    
+    def test_gradient_2(self):
         
+        # run tests
+        ntest = 100
+        ninp = 10
+        nq = 20
+        nhid = self.nhid
+        nw = (ninp + 1) * nhid + (nhid + 1) * 1     # total number of weights
+        dw = 1.e-6
+               
+        for j in xrange(ntest):
+            
+            # generate query data
+            query = [ [0, random.choice([0, 1])] + [random.random() for _ in xrange(ninp)] for _ in xrange(nq) ]
+            
+            # get analytical gradient
+            grad = ranknet.gradient(query, self.model)
+                        
+            # select weight at random
+            jw = random.choice(xrange(nw))
+                
+            # numerical derivative                
+            w_u = self.w[:]
+            w_u[jw] = w_u[jw] + dw
+            self.model.setw(w_u)
+            C_u = ranknet.cost(query, self.model)
+        
+            w_d = self.w[:]
+            w_d[jw] = w_d[jw] - dw
+            self.model.setw(w_d)
+            C_d = ranknet.cost(query, self.model)
+        
+            dnum = (C_u - C_d) / dw / 2.0
+                
+            # compare results
+            self.assertAlmostEqual(grad[jw], dnum, 5, "Run %d: %e %e " % (j, grad[jw], dnum))
+
+            print j, jw, grad[jw], dnum
 
 if __name__ == "__main__":
     unittest.main()

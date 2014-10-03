@@ -1,10 +1,11 @@
-import ffnet, activation, linfunc
+import ffnet, activation
+import la
 import unittest, random
 
 n = 3
-k, q, m = 8, 5, 3
+k, q, m = 10, 5, 1
 
-class FFNetTest(unittest.TestCase):
+class Test(unittest.TestCase):
          
     def setUp(self):
         # super
@@ -45,7 +46,7 @@ class FFNetTest(unittest.TestCase):
     def test_apply(self):
             
         # create a simple network
-        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.sigmoid(), activation.sigmoid()])  
+        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.tanh(), activation.sigmoid()])  
 
         # set weights
         w = net.getw()
@@ -54,7 +55,7 @@ class FFNetTest(unittest.TestCase):
 
         # some input
         x = [1] * 8
-        z = net.apply(x)
+        net.apply(x)
 
     def test_backprop(self):
         
@@ -66,7 +67,7 @@ class FFNetTest(unittest.TestCase):
         net = ffnet.FFNet([k, q, m], [activation.linear(), activation.sigmoid(1.2), activation.tanh(2.0, 3.0/2.0)])  
 
         # set random weights
-        wscale = 0.1
+        wscale = 3.0
         w = net.getw()
         w = [random.uniform(-wscale, wscale) for _ in w]
         net.setw(w)
@@ -78,8 +79,10 @@ class FFNetTest(unittest.TestCase):
             
             # generate random input vector
             xscale = 5.0
-            x = [random.uniform(-xscale, xscale) for _ in xrange(0, k)]
-            z = net.apply(x)
+            x = [random.uniform(-xscale, xscale) for _ in xrange(k)]
+            
+            # propagate forward
+            net.apply(x)
 
             # select a weight at random
             N = (k+1)*q + (q+1)*m           # total number of weights
@@ -90,7 +93,7 @@ class FFNetTest(unittest.TestCase):
                 
                 # compute derivative of output with 
                 # respect to input using back propagation
-                dbpr = net.backprop(linfunc.unit(m, jm))    # initial delta is just a unit vector
+                dbpr = net.backprop(la.unit(m, jm))    # initial delta is just a unit vector
                 
                 # numerical derivative           
                 dw = 1.e-6

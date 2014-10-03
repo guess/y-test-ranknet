@@ -1,4 +1,10 @@
-import linfunc
+"""
+Feed-forward neural network
+===========================
+
+"""
+
+import la
 
 class FFNet(object):
 
@@ -102,7 +108,7 @@ class FFNet(object):
 			# add bias 
 			z_ = [1] + self.z[j]
 			# next layer input
-			self.y += [linfunc.gax(self.W[j], z_)]
+			self.y += [la.gax(self.W[j], z_)]
 			
 		# output layer activation
 		j = self.nlayers-1
@@ -130,17 +136,17 @@ class FFNet(object):
 		
 		k = self.nlayers - 1
 		dz[k] = d
-		dy[k] = linfunc.prod(d, map( self.activf[k].df, self.z[k] ))
+		dy[k] = la.vmul(d, map( self.activf[k].df, self.z[k] ))
 		
 		for j in xrange(k, 0, -1):
 			# compute derivatives with respect to biases and weights
-			dW[j-1] = [dy[j]] + linfunc.outer(dy[j], self.z[j-1])
+			dW[j-1] = [dy[j]] + la.outer(dy[j], self.z[j-1])
 			# backpropagate connections
-			dz[j-1] = linfunc.lgax(dy[j], self.W[j-1])
+			dz[j-1] = la.lgax(dy[j], self.W[j-1])
 			# remove bias
 			dz_ = dz[j-1][1:]	
 			# backpropagate activation
-			dy[j-1] = linfunc.prod(dz_, map( self.activf[j-1].df, self.z[j-1] ))
+			dy[j-1] = la.vmul(dz_, map( self.activf[j-1].df, self.z[j-1] ))
 			
 		
 		# expand derivatives		

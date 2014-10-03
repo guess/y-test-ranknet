@@ -1,4 +1,5 @@
-import unittest, linfunc
+import unittest
+import la
 
 
 class Test(unittest.TestCase):
@@ -9,18 +10,18 @@ class Test(unittest.TestCase):
         matrix = [[1, 2, 3], [4, 5, 6]]
         x = [1, 2]
         
-        print linfunc.gax(matrix, x)
+        print la.gax(matrix, x)
         
     def test_lgax(self):
         
         matrix = [[1, 2, 3], [4, 5, 6]]
         x = [2, 2, 2]
         
-        print linfunc.lgax(x, matrix)
+        print la.lgax(x, matrix)
 
     def test_unit(self):
         
-        u = linfunc.unit(6, 2)
+        u = la.unit(6, 2)
         
         print u
 

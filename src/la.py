@@ -11,21 +11,20 @@ Matrices: A, B, C, D, G, H
 
 Column-wise matrix representation
 ---------------------------------
-Matrix are stored column-wise, i.e A[j] gets the j-th column
-of the matrix. 
+Matrix are stored column-wise, i.e A[j] gets the j-th column of the matrix. 
 
 
 """
 
 def unit(n, k):
     """
-    Create an ort vector 
+    Create a unit vector  
     """
     return [ 0 if j!=k else 1 for j in xrange(n) ]
 
 def vsum(x, y):
     """
-    Compute element-wise vsum of two vectors
+    Compute element-wise sum of two vectors
     """
     
     assert len(x) == len(y), "Vectors must be of the same size"
@@ -33,11 +32,11 @@ def vsum(x, y):
     result = [0] * len(x)           # preallocate result
     
     for j in xrange(0, len(x)):     
-        result[j] =  x[j] + y[j]    # vsum of corresponding elements
+        result[j] =  x[j] + y[j]    # sum of corresponding elements
         
     return result
   
-def prod(x, y): 
+def vmul(x, y): 
     """
     Compute element-wise multiplication of two vectors
     """
@@ -73,7 +72,7 @@ def inner(x, y):
 def sax(a, x):
     """ 
     Multiply vector by scalar. The name is derived from `saxpy`:
-    "Scalar a multiplied by vector x plus vector y"
+    "Scalar `a` multiplied by vector `x` plus vector `y`"
     """
     
     # multiply each element of vector by scalar
@@ -96,7 +95,7 @@ def outer(x, y):
 def gax(A, x):
     """
     Multiply matrix A by vector x. The name is derived from `gaxpy`:
-    "General matrix A by vector x plus vector y"
+    "General matrix `A` by vector `x` plus vector `y`"
     """
         
     assert len(A) == len(x), "Matrix dimensions must agree"             

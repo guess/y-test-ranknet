@@ -18,10 +18,10 @@ class Test(unittest.TestCase):
                         
         # Test internal structured weight matrices
         self.assertEqual(n-1, len(net.W), "#1.1 Dimensions")
-        self.assertEqual(q, len(net.W[0]), "#1.2 Dimensions")
-        self.assertEqual(k+1, len(net.W[0][0]), "#1.3 Dimensions")
-        self.assertEqual(m, len(net.W[1]), "#1.4 Dimensions")
-        self.assertEqual(q+1, len(net.W[1][0]), "#1.5 Dimensions")
+        self.assertEqual(k+1, len(net.W[0]), "#1.2 Dimensions")
+        self.assertEqual(q, len(net.W[0][0]), "#1.3 Dimensions")
+        self.assertEqual(q+1, len(net.W[1]), "#1.4 Dimensions")
+        self.assertEqual(m, len(net.W[1][0]), "#1.5 Dimensions")
             
     def test_getw(self):
 
@@ -41,20 +41,23 @@ class Test(unittest.TestCase):
         
         # Test updated weights
         self.assertEqual(1.0, net.W[0][0][0], "#3.1 Should be updated")
-        self.assertEqual(2.0, net.W[1][5][1], "#3.2 Should be updated") 
+                
+    def test_initw(self):
+        
+        # create a simple network
+        net = ffnet.FFNet([k, q, m], [])
+        net.initw(2.0)
+        
+        print net.W
+        
         
     def test_apply(self):
             
         # create a simple network
-        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.tanh(), activation.sigmoid()])  
-
-        # set weights
-        w = net.getw()
-        w = [-10] * len(w)
-        net.setw(w)
-
+        net = ffnet.FFNet([k, q, m], [activation.linear(), activation.tanh(), activation.sigmoid()])    
+                
         # some input
-        x = [1] * 8
+        x = [1] * k
         net.apply(x)
 
     def test_backprop(self):

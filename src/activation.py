@@ -32,7 +32,7 @@ class sigmoid(ActivationFunction):
     
     def f(self, x):
         # non-overflowing sigmoid 
-        return self.a * ( 1 + math.tanh(x/self.s/2.0) ) / 2.0
+        return self.a * ( 1.0 + math.tanh(x/self.s/2.0) ) / 2.0
     
     def df(self, f):
         return  f * (self.a - f) / self.a / self.s

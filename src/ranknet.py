@@ -2,75 +2,93 @@
 RankNet
 
 See: 
-[1] C
+[1] C. Burges et al., Learning to Rank using Gradient Descent 
 [2] C. Burges, From RankNet to LambdaRank to LambdaMART: An Overview
-
-RankNet uses a pair-wise cost function to achieve learning
-of relevance relationships between items of the same query. 
-The RankNet cost function may be used on top of any learning algorithm.
-Following [1] we use a standard feed-forward neural network. 
 
 """
 
 import math, la
-
-sgm = 1.0
-
-def s(x, y):
-    if x > y: return 1.0
-    elif x == y: return 0.0
-    else: return -1.0
-
-def cost(query, model):
+     
+def cost(query, model, sigma):
             
-    # Compute predictions
-    scores = [];
+    # Compute model outputs for each sample in query
+    scores = [ model.apply(u[2:])[0] for u in query ]
+            
+    # Find all pairs
+    pairs = []
+    C = 0
+    for i in xrange(len(query)):
+        for j in xrange(i+1, len(query)):
+            s = S( query[i][1], query[j][1] )                       # 
+            delta = scores[i] - scores[j]                           # scores difference
+            prob = ( 1.0 + math.tanh(sigma*delta/2.0) ) / 2.0       # estimated probability of ranking i > j     
+            c = (1.0 - s) * sigma * delta / 2.0 - math.log(prob)    # cost contribution
+            pairs.append((i, j, prob, c))                                
+            C += c                                                  # total cost
+    
+    return (C, scores, pairs)
+    
+        
+def gradient(query, model, sigma):  
+    
+    # Compute model outputs for each sample in query
+    scores = []
+    grads = []
     
     for u in query:
         scores += model.apply(u[2:])
-            
-    # Sum contributions from all pairs
-    C = 0.0
-        
-    for j in xrange(0, len(query)-1):
-        for k in xrange(j+1, len(query)):
-            if query[j][1] != query[k][1]:
-                a = 1.0 - s(query[j][1], query[k][1])
-                d = scores[j] - scores[k]
-                C += a * d * sgm / 2.0 + math.log1p( math.exp( - sgm * d ) )
-
-    return C
+        grads += [ model.backprop([1]) ]
     
-def gradient(query, model):  
+    # Find all pairs, their S_ij and lambda_ij
+    pairs = []
+    for i in xrange(len(query)):
+        for j in xrange(i+1, len(query)):
+            s = S( query[i][1], query[j][1] )
+            lambd = lmb( scores[i], scores[j], s, sigma )
+            pairs.append((i, j, lambd))
     
-    # Compute predictions and gradients for each entry in query
-    scores = [];
-    grads = [];
-    
-    for u in query:
-        scores += model.apply(u[2:])         # features are in rows from 
-        grads  += [ model.backprop([1]) ]        # assuming model has only one output
-         
-    # Index elements for lambda computations
-    bots = [j for j in xrange(0, len(query)) if query[j][1] == 0]  # index of elements with label 0
-    tops = [j for j in xrange(0, len(query)) if query[j][1] == 1]  # index of elements with label 1
-        
-    # Compute lambdas
-    lambs = [0] * len(query)
-    
-    for j in xrange(0, len(query)):
-        if query[j][1] == 1:                # top sample
-            # sum over bottom elements
-            for k in bots:
-                lambs[j] += lmb(scores[j], scores[k])
-        else:                               # bottom sample
-            # sum over top elements
-            for k in tops:
-                lambs[j] -= lmb(scores[k], scores[j])
+    # Sum lambda's by sample
+    lambds = [0] * len(query)
+    for t in pairs:
+        lambds[ t[0] ] += t[2]
+        lambds[ t[1] ] -= t[2]
                 
     # Final gradient is a weighted sum of individual gradients
-    return la.gax(grads, lambs)
-                
-def lmb(x, y):
-    return  - sgm / ( 1.0 + math.exp( sgm * (x - y) ))
+    return la.gax(grads, lambds)
+                    
+def lmb(x, y, S, sigma):
+    """
+    Lambda coefficient for a pair of samples. [2, equation (3)]
+    """
+    a = (1.0 - S) / 2.0
+    b = ( 1.0 + math.tanh(sigma*(y - x)/2.0) ) / 2.0
+    return ( a - b ) * sigma  
+
+def S(x, y):
+    if x > y: return 1.0
+    elif x == y: return 0.0
+    else: return -1.0
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     

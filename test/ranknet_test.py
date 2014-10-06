@@ -3,7 +3,9 @@ import ranknet, ffnet, activation
 
 class Test(unittest.TestCase):
 
-    random.seed(102.0)
+    seed = 1.0
+
+    random.seed(seed)
     
     ninp = 10       # number of features
     nhid = 8        # number of hidden units
@@ -11,32 +13,33 @@ class Test(unittest.TestCase):
         
     # generated query data 
     query = [ [0, random.choice([0, 1])] + [random.random() for _ in xrange(ninp)] for _ in xrange(nq) ]
-    
-    print query[0][1], query[1][1], query[2][1]
-              
+                 
     # neural network model
     model = ffnet.FFNet([ninp, nhid, 1], [activation.linear(), activation.tanh(), activation.sigmoid()])
         
     # random weights
-    w = model.getw();
-    w = [random.uniform(-1.6, 1.6) for _ in w]
-    model.setw(w)    
+    model.initw(1.0, seed)   
+    w = model.getw()
+    
+    
+    # ranknet sigma
+    sigma = 1.0
             
     def test_s(self):
-        self.assertEqual(1, ranknet.s(1, 0))
-        self.assertEqual(0, ranknet.s(1, 1))
-        self.assertEqual(0, ranknet.s(0, 0))
-        self.assertEqual(-1, ranknet.s(0, 1))
+        self.assertEqual(1, ranknet.S(1, 0))
+        self.assertEqual(0, ranknet.S(1, 1))
+        self.assertEqual(0, ranknet.S(0, 0))
+        self.assertEqual(-1, ranknet.S(0, 1))
        
     def test_cost(self):
                
-        C = ranknet.cost(self.query, self.model)
+        C = ranknet.cost(self.query, self.model, self.sigma)
         print C
 
     def test_gradient(self):
         
         # analytical gradient
-        dbpr = ranknet.gradient(self.query, self.model)
+        dbpr = ranknet.gradient(self.query, self.model, self.sigma)
         
         # numerical gradient
         dw = 1.e-5
@@ -45,14 +48,14 @@ class Test(unittest.TestCase):
         w_u = self.w[:]
         w_u[jw] = w_u[jw] + dw
         self.model.setw(w_u)
-        C_u = ranknet.cost(self.query, self.model)
+        C_u = ranknet.cost(self.query, self.model, self.sigma)
         
         w_d = self.w[:]
         w_d[jw] = w_d[jw] - dw
         self.model.setw(w_d)
-        C_d = ranknet.cost(self.query, self.model)
+        C_d = ranknet.cost(self.query, self.model, self.sigma)
         
-        dnum = (C_u - C_d) / dw / 2.0
+        dnum = (C_u[0] - C_d[0]) / dw / 2.0
         
         print dbpr[jw], dnum
     
@@ -72,7 +75,7 @@ class Test(unittest.TestCase):
             query = [ [0, random.choice([0, 1])] + [random.random() for _ in xrange(ninp)] for _ in xrange(nq) ]
             
             # get analytical gradient
-            grad = ranknet.gradient(query, self.model)
+            grad = ranknet.gradient(query, self.model, self.sigma)
                         
             # select weight at random
             jw = random.choice(xrange(nw))
@@ -81,14 +84,14 @@ class Test(unittest.TestCase):
             w_u = self.w[:]
             w_u[jw] = w_u[jw] + dw
             self.model.setw(w_u)
-            C_u = ranknet.cost(query, self.model)
+            C_u = ranknet.cost(query, self.model, self.sigma)
         
             w_d = self.w[:]
             w_d[jw] = w_d[jw] - dw
             self.model.setw(w_d)
-            C_d = ranknet.cost(query, self.model)
+            C_d = ranknet.cost(query, self.model, self.sigma)
         
-            dnum = (C_u - C_d) / dw / 2.0
+            dnum = (C_u[0] - C_d[0]) / dw / 2.0
                 
             # compare results
             self.assertAlmostEqual(grad[jw], dnum, 5, "Run %d: %e %e " % (j, grad[jw], dnum))

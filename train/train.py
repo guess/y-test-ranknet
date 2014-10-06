@@ -9,8 +9,8 @@ def train(data):
     sigma = 1.0
   
     # network structure
-    layers = [13, 1]
-    activf = [activation.linear(),  activation.sigmoid()] # activation.tanh(1.75, 3./2.),
+    layers = [13, 8, 1]
+    activf = [activation.linear(), activation.tanh(1.75, 3./2.),  activation.sigmoid()] # ,
     net = ffnet.FFNet(layers, activf)
     net.initw(0.01)               
     
@@ -23,7 +23,7 @@ def train(data):
     rate = 1.e-3
     
     # number of epochs
-    maxepoch = 500000
+    maxepoch = 50000000
             
     # training
     for je in xrange(maxepoch):
@@ -38,7 +38,7 @@ def train(data):
         # print
         if jq == 95:
             print je, jq, [r[1] for r in query],  C[0], C[1], C[2]
-            
+            print "weights ", net.getw()
         
         # compute gradients
         g = ranknet.gradient(query, net, sigma)

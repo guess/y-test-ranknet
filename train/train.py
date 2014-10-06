@@ -1,84 +1,52 @@
 import ffnet, activation, ranknet, la
-import math, random
+import random
 
 def train(data):
     
-    random.seed(100.0)
-    
+    print "Total number of queries: ", len(data)
+  
+    # ranknet sigma
+    sigma = 1.0
+  
     # network structure
-    layers = [13, 8, 1]
-    activf = [activation.linear(), activation.tanh(1.75, 3./2.), activation.linear()] 
+    layers = [13, 1]
+    activf = [activation.linear(),  activation.sigmoid()] # activation.tanh(1.75, 3./2.),
     net = ffnet.FFNet(layers, activf)
-    net.initw(0.1, 100.0)               # seed
-
-    # total number of queries in input data 
-    n = len(data)
+    net.initw(0.01)               
     
-    # generate random permutation of training data 
-    perm = range(n)
+    # random permutation of data
+    perm = range(len(data))
     random.shuffle(perm)
-    
-    # use fixed number of queries for validation
-    nvalid = 100
-    
-    # number of training epochs
-    nepoch = 500000
+    n = len(perm)
     
     # learning rate
-    rate = 1.e-5
+    rate = 1.e-3
     
-    # print frequency
-    nprint = 100
+    # number of epochs
+    maxepoch = 500000
+            
+    # training
+    for je in xrange(maxepoch):
         
-    # stochastic gradient descent
-    for je in xrange(nepoch):
-    
-        # reporting
-        if je % nprint == 0:
+        # take next query
+        jq = je % n
+        query = data[jq]
+        
+        # compute cost and estimates
+        C = ranknet.cost(query, net, sigma)
+        
+        # print
+        if jq == 95:
+            print je, jq, [r[1] for r in query],  C[0], C[1], C[2]
             
-            # compute validation cost
-            C = 0.0
-            for jv in xrange(nvalid):
-                C = C + ranknet.cost(data[perm[jv]], net)
-            
-            # explicit review of one element
-            for r in test(data[perm[0]], net):
-                print r
-            
-            # print report string
-            print "epoch: %d validation cost: %e" % (je, C)
-            
-        # take next training query
-        jq = random.choice(perm[nvalid:])
         
         # compute gradients
-        g = ranknet.gradient(data[jq], net)
-    
+        g = ranknet.gradient(query, net, sigma)
+        
         # update weights
         w = la.vsum(net.getw(), la.sax(-rate, g))
         net.setw(w)
-    
-        
-def test(query, model):
-    
-    # compute scores
-    scores = [];
-    
-    for u in query:
-        scores += model.apply(u[2:])
-    
-    # probabilities
-    res = []
-    for j in xrange(0, len(query)-1):
-        for k in xrange(j+1, len(query)):
-            res.append([query[j][0], query[j][1], query[k][1], scores[j], scores[k], 1.0 / ( 1.0 + math.exp( - 1.0 * (scores[j] - scores[k])) )])
-          
-    return res    
-        
-        
-        
-        
-        
+                     
         
         
         

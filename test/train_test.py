@@ -1,9 +1,9 @@
 import unittest
-import reader, eda, preprocess2, train
+import reader, eda, preprocess, train
 
 class Test(unittest.TestCase):
 
-    n = 20000
+    n = 50000
 
     def testName(self):
         
@@ -17,7 +17,7 @@ class Test(unittest.TestCase):
         stats = eda.stats(data)
         
         # preprocess data
-        preprocess2.preproc(data)
+        preprocess.preproc(data)
         
         # start training
         train.train(data)

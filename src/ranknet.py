@@ -19,12 +19,13 @@ def cost(query, model, sigma):
     C = 0
     for i in xrange(len(query)):
         for j in xrange(i+1, len(query)):
-            s = S( query[i][1], query[j][1] )                       # 
-            delta = scores[i] - scores[j]                           # scores difference
-            prob = ( 1.0 + math.tanh(sigma*delta/2.0) ) / 2.0       # estimated probability of ranking i > j     
-            c = (1.0 - s) * sigma * delta / 2.0 - math.log(prob)    # cost contribution
-            pairs.append((i, j, prob, c))                                
-            C += c                                                  # total cost
+            if query[i][1] != query[j][1]:
+                s = S( query[i][1], query[j][1] )                       # 
+                delta = scores[i] - scores[j]                           # scores difference
+                prob = ( 1.0 + math.tanh(sigma*delta/2.0) ) / 2.0       # estimated probability of ranking i > j     
+                c = (1.0 - s) * sigma * delta / 2.0 - math.log(prob)    # cost contribution
+                pairs.append((i, j, prob, c))                                
+                C += c                                                  # total cost
     
     return (C, scores, pairs)
     
@@ -43,9 +44,10 @@ def gradient(query, model, sigma):
     pairs = []
     for i in xrange(len(query)):
         for j in xrange(i+1, len(query)):
-            s = S( query[i][1], query[j][1] )
-            lambd = lmb( scores[i], scores[j], s, sigma )
-            pairs.append((i, j, lambd))
+            if query[i][1] != query[j][1]:
+                s = S( query[i][1], query[j][1] )
+                lambd = lmb( scores[i], scores[j], s, sigma )
+                pairs.append((i, j, lambd))
     
     # Sum lambda's by sample
     lambds = [0] * len(query)

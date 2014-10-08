@@ -24,6 +24,19 @@ class Test(unittest.TestCase):
         u = la.unit(6, 2)
         
         print u
+        
+    def test_idxview(self):
+        
+        x = ["a", "b", "c", "d"]
+        j = [1, 1, 3, 1]
+        
+        d = la.idxview(x, j)
+       
+        for s in d:
+            print s 
+        
+        for s in d:
+            print s 
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

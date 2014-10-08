@@ -15,6 +15,8 @@ Matrix are stored column-wise, i.e A[j] gets the j-th column of the matrix.
 
 
 """
+from sqlite3 import collections
+from _ctypes import Array
 
 def unit(n, k):
     """
@@ -121,5 +123,43 @@ def lgax(x, A):
         
     return z
     
+class idxview(collections.Sequence):
+    """
+    View of list indexed by another list
+    """
+    def __init__(self, arr, idx):
+        self.arr = arr
+        self.idx = idx
+    
+    def __getitem__(self, index):
+        return self.arr[self.idx[index]]    
+    
+    def __len__(self):
+        return len(self.idx) 
+    
+    def __iter__(self):   
+        self.current = -1
+        return self
+    
+    def next(self):
+        if self.current >= len(self.idx)-1:
+            raise StopIteration
+        else:
+            self.current += 1
+            return self.arr[self.idx[self.current]]
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
 

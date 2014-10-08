@@ -99,7 +99,7 @@ class Test(unittest.TestCase):
             
     def xtest_training_1(self):
         
-        # train on a single query
+        # trainsg on a single query
         
         nepoch = 10000    # number of training epochs
         rate = 0.1        # learning rate
@@ -121,7 +121,7 @@ class Test(unittest.TestCase):
         
     def xtest_training_2(self): 
         
-        # train on several queries
+        # trainsg on several queries
         data = []
         d = range(10)
         for j in d:

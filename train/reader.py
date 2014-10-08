@@ -1,15 +1,21 @@
-
-
-def read(fname, maxlines = 0):
+def read(fname, jstartline = 0, maxlines = 0):
+    """
+    Read Y data files
+    """
     
     f = open(fname, "r")     # open data file
         
     count = 0       # line count
-    query = -1      # current query id
-    data = []       # list of data, partitioned by query
+    jq = -1      # current jq id
+    data = []       # list of data, partitioned by jq
     
     # read file line by line
     for line in f:
+        
+        # skip until requested line
+        if count < jstartline: 
+            count += 1
+            continue
         
         # break line into tokens
         elements = line.split()
@@ -17,10 +23,11 @@ def read(fname, maxlines = 0):
         # column 0: query number
         q = int(elements[0])
         
-        if q > query:
+        if q > jq:
             # new partition
-            query += 1
-            data.append([])
+            jq = q
+            query = []
+            data.append(query)
             
         # column 1: relevance label    
         r = int(elements[1])
@@ -29,11 +36,11 @@ def read(fname, maxlines = 0):
         x = map(float, elements[2:])
         
         # add recored to partition
-        data[query].append([q, r] + x)
+        query.append([q, r] + x)
         
         # check for stopping 
         count += 1
-        if maxlines > 0 and count >= maxlines:
+        if maxlines > 0 and count >= jstartline + maxlines:
             break
     
     # done    

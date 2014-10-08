@@ -5,7 +5,7 @@ Feed-forward neural network
 """
 
 import la
-from random import Random
+import random
 
 class FFNet(object):
 
@@ -51,15 +51,14 @@ class FFNet(object):
 			# append to list of weights
 			self.W.append(m)
 	
-	def initw(self, scale = 1.0, seed = None):
+	def __repr__(self):
+		return "ffnet: %s %s" % (str(self.layers), str(self.activf))
+		
+	
+	def initw(self, scale = 1.0):
 		"""
 		Random initialization of network weights. Biases are initialized to 0. 
-		"""
-		if seed is not None:
-			rand = Random(seed)
-		else:
-			rand = Random()
-		
+		"""		
 		w = [];
 			
 		for matrix in self.W:
@@ -67,7 +66,7 @@ class FFNet(object):
 			w = w + [0.0] * len(matrix[0])
 			# initialize weights
 			for jc in xrange(1, len(matrix)):
-				w = w + [rand.gauss(0.0, scale) for _ in xrange(len(matrix[jc]))]
+				w = w + [random.gauss(0.0, scale) for _ in xrange(len(matrix[jc]))]
 		
 		# update weights of the network
 		self.setw(w)

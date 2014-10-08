@@ -36,7 +36,8 @@ def train(data, opts, net, writefcn):
     rpropmem = ( [1.e-5] * len(net.getw()), [ 1 ] * len(net.getw()) )
     
     print "Start batch training, number of queries: ", len(data)
-    print str(opts)    
+    print str(opts)
+    print str(net)    
             
     # training iterations
     for je in xrange(opts.maxepoch):

@@ -12,7 +12,7 @@ class options(object):
         self.maxfail = 100                  # maximum number of validation fails
     
     def __repr__(self):
-        return "options sigma: %e nvalid: %d nepval: %d maxepoch: %d maxfail: %d" % (self.sigma, self.nvalid, self.nepval, self.maxepoch, self.maxfail)
+        return "options sigma: %e rate: %e nvalid: %d nepval: %d maxepoch: %d maxfail: %d" % (self.sigma, self.rate, self.nvalid, self.nepval, self.maxepoch, self.maxfail)
 
 def train(data, opts, net, writefcn):
     """
@@ -29,6 +29,10 @@ def train(data, opts, net, writefcn):
     nfail = 0               # current number of validation fails
     mincost = 1.e+100       # current known minimal validation cost
     wbest = net.getw()      # weights for minimal validation error
+    
+    print "Start stochastic gradient descent training, number of queries: ", len(data)
+    print str(opts)
+    print str(net)
             
     # stochastic gradient training
     for je in xrange(opts.maxepoch):
@@ -77,11 +81,5 @@ def train(data, opts, net, writefcn):
     
     # return updated model
     net.setw(wbest)
-    return net
-        
-        
-        
-        
-        
-        
+    return net    
         
